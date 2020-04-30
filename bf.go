@@ -48,7 +48,7 @@ func IsBFChar(t byte) bool {
 func main() {
 	// Parsing flags and args
 	flag.BoolVar(&IgnoreCR, "ignore-cr", true, "Ignore the carriage return char in input.")
-	flag.BoolVar(&OtptimizeFile, "O", false, "Optimize the file, reading only useful chars")
+	flag.BoolVar(&OtptimizeFile, "O", false, "Optimize the file, reading only useful chars (startup may be longer)")
 	flag.Parse()
 
 	if len(flag.Args()) == 1 { // checking usage
@@ -62,11 +62,13 @@ func main() {
 
 		for {
 			if err == nil {
-				for i := 0; i < n; i++ {
-					if !OtptimizeFile {
-						Instructions = append(Instructions, chars[i])
-					} else if IsBFChar(chars[i]) { // Implicit - && OptimizeFile -. If OptimizeFile is true, then only brainfuck chars are added to the intructions queue
-						Instructions = append(Instructions, chars[i])
+				if !OtptimizeFile {
+					Instructions = append(Instructions, chars[:n]...)
+				} else {
+					for i := 0; i < n; i++ {
+						if IsBFChar(chars[i]) { //If OptimizeFile is true, then only brainfuck chars are added to the intructions queue
+							Instructions = append(Instructions, chars[i])
+						}
 					}
 				}
 
