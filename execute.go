@@ -1,7 +1,7 @@
 package main
 
 var (
-	// InstNumber is the address (index in slice) of the current instruction
+	// InstNumber is the address (index in slice) of the current instruction, can be seen as an instruction pointer
 	InstNumber int = 0
 
 	// TotalInst is the address + 1 of the last instruction. Used to know when the program end is reached

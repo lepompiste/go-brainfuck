@@ -6,14 +6,29 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 )
 
 var (
 	// IgnoreCR is used to ignore carriage return in input
 	IgnoreCR bool
 
-	// OtptimizeFile read only brainfuck's useful chars
-	OtptimizeFile bool
+	// OptimizeFile read only brainfuck's useful chars
+	OptimizeFile bool
+
+	// OptimizeLoops search only one time for the matching start/end token
+	OptimizeLoops bool
+
+	// Optimize set all Optimization vars to true if set to true
+	Optimize bool
+
+	// DurationBenchmark enable or disable time benchmarking
+	DurationBenchmark bool
+)
+
+var (
+	start      time.Time
+	endparsing time.Time
 )
 
 // ExecutionError is error of execution datatype structure
@@ -48,8 +63,25 @@ func IsBFChar(t byte) bool {
 func main() {
 	// Parsing flags and args
 	flag.BoolVar(&IgnoreCR, "ignore-cr", true, "Ignore the carriage return char in input.")
-	flag.BoolVar(&OtptimizeFile, "O", false, "Optimize the file, reading only useful chars (startup may be longer)")
+	flag.BoolVar(&OptimizeFile, "OF", false, "Optimize the file, reading only useful chars (startup may be longer)")
+	flag.BoolVar(&OptimizeLoops, "OL", false, "Optimize the loops")
+	flag.BoolVar(&Optimize, "O", false, "Optimize all can be optimized (currently loops and file)")
+	flag.BoolVar(&DurationBenchmark, "duration", false, "At the end of execution, print in ms how long did the parsing and execution take")
 	flag.Parse()
+
+	if Optimize {
+		OptimizeFile, OptimizeLoops = true, true
+	}
+
+	if OptimizeLoops {
+		InitTwins()
+		// As twins are optional, it may be manually initialized.
+		// Other global structures are automatically initialized via init() function
+	}
+
+	if DurationBenchmark {
+		start = time.Now()
+	}
 
 	if len(flag.Args()) == 1 { // checking usage
 
@@ -62,7 +94,7 @@ func main() {
 
 		for {
 			if err == nil {
-				if !OtptimizeFile {
+				if !OptimizeFile {
 					Instructions = append(Instructions, chars[:n]...)
 				} else {
 					for i := 0; i < n; i++ {
@@ -83,7 +115,19 @@ func main() {
 			}
 		}
 	reading_end:
+
+		if DurationBenchmark {
+			endparsing = time.Now()
+		}
+
 		Execute() // Start the execution of the instructions queue
+
+		if DurationBenchmark {
+			end := time.Now()
+			fmt.Println("\nParsing duration :", endparsing.Sub(start))
+			fmt.Println("Execution duration :", end.Sub(endparsing))
+			fmt.Println("Total duration :", end.Sub(start))
+		}
 	} else {
 		fmt.Println("Usage : go-bf [options] <file>")
 	}
