@@ -1,3 +1,3 @@
-module github.com/lepompiste/go-bf
+module github.com/robinjulien/go-bf
 
 go 1.14
